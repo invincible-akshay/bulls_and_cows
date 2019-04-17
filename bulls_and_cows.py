@@ -4,13 +4,13 @@
 # *********************** #
 from itertools import product
 from random import shuffle
-# from random import choice
+from random import choice
 
 
 # Valid digits
 digits = '0123456789'
 # Size of secret
-size = 2
+size = 4
 
 
 def parse_score(input_score):
@@ -59,6 +59,14 @@ def score_giver(secret, guessed_code):
     return bulls, cows
 
 
+def code_maker(code_size):
+    secret_code = ''.join(choice(digits) for i in range(code_size))
+    return secret_code
+
+
+print("Playing for secret of size = %d" % size)
+chosen_secret = code_maker(size)
+print("Chosen secret : %s" % chosen_secret)
 choices = [p for p in product(digits, repeat=size)]
 shuffle(choices)
 answers = []
@@ -70,9 +78,12 @@ while True:
     ans = choices[0]
     answers.append(ans)
     # print ("(Narrowed to %i possibilities)" % len(choices))
-    score = input("Guess %2i is %*s. Answer (Bulls, cows)? "
-                  % (len(answers), size, ''.join(ans)))
-    score = parse_score(score)
+    """score = input("Guess %2i is %*s. Answer (Bulls, cows)? "
+                  % (len(answers), size, ''.join(ans)))"""
+    print("Guess %d is %s." % (len(answers), ans))
+    score = score_giver(chosen_secret, ans)
+    print("Player scores the guess as: %s" % (score,))
+    # score = parse_score(score)
     scores.append(score)
     # print("Bulls: %i, Cows: %i" % score)
     found = score == (size, 0)
@@ -89,17 +100,12 @@ while True:
                           for an, sc in zip(answers, scores)))
         break
 
-
-""" WIP
-def code_maker(code_size):
-    secret_code = ''.join(choice(digits) for i in range(code_size))
-    return secret_code
+"""
+code = code_maker(size)
+print("Code chosen is - " + code)
 """
 
-
-""" TESTS
-code = code_maker(4)
-print("Code chosen is - " + code)
+"""
 guess = '0000'
 print("Score for guess = %s is - %s" % (guess, (score_giver(code, guess),)))
 guess = '1111'
