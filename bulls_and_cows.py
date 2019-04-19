@@ -2,15 +2,22 @@
 # @UTHOR: AKSHAY NEHE     #
 # Date : 17-Apr-2019      #
 # *********************** #
+import time
 from itertools import product
-from random import shuffle
 from random import choice
-
+from random import shuffle
 
 # Valid digits
 digits = '0123456789'
 # Size of secret
-size = 4
+# size = 4
+size = int(input("What is the string size to play for? "))
+# Number of trials to run
+trials_count = int(input("How many trials do you want to run? "))
+
+# Capturing start of time after size input
+program_start = time.time()
+guess_count = 0
 
 
 def parse_score(input_score):
@@ -64,41 +71,51 @@ def code_maker(code_size):
     return secret_code
 
 
-print("Playing for secret of size = %d" % size)
-chosen_secret = code_maker(size)
-print("Chosen secret : %s" % chosen_secret)
-choices = [p for p in product(digits, repeat=size)]
-shuffle(choices)
-answers = []
-scores = []
+for t in range(trials_count):
+    print("Playing for secret of size = %d" % size)
+    chosen_secret = code_maker(size)
+    print("Chosen secret : %s" % chosen_secret)
+    choices = [p for p in product(digits, repeat=size)]
+    shuffle(choices)
+    answers = []
+    scores = []
 
-print("Playing Bulls & Cows with %i unique digits\n" % size)
+    print("Playing Bulls & Cows with %i unique digits\n" % size)
 
-while True:
-    ans = choices[0]
-    answers.append(ans)
-    # print ("(Narrowed to %i possibilities)" % len(choices))
-    """score = input("Guess %2i is %*s. Answer (Bulls, cows)? "
-                  % (len(answers), size, ''.join(ans)))"""
-    print("Guess %d is %s." % (len(answers), ans))
-    score = score_giver(chosen_secret, ans)
-    print("Player scores the guess as: %s" % (score,))
-    # score = parse_score(score)
-    scores.append(score)
-    # print("Bulls: %i, Cows: %i" % score)
-    found = score == (size, 0)
-    if found:
-        print("Ye-haw!")
-        break
-    choices.remove(ans)
-    choices = [c for c in choices if score_giver(ans, c) == score]
-    # print(choices)
-    if not choices:
-        print("Bad scoring? nothing fits those scores you gave:")
-        print('  ' +
-              '\n  '.join("%s -> %s" % (''.join(an), sc)
-                          for an, sc in zip(answers, scores)))
-        break
+    while True:
+        loop_start = time.time()
+        ans = choices[0]
+        answers.append(ans)
+        # print ("(Narrowed to %i possibilities)" % len(choices))
+
+        print("Guess %d is %s." % (len(answers), ans))
+        score = score_giver(chosen_secret, ans)
+        print("Player scores the guess as: %s" % (score,))
+        # score = parse_score(score)
+        scores.append(score)
+        # print("Bulls: %i, Cows: %i" % score)
+        found = score == (size, 0)
+        if found:
+            print("Ye-haw!")
+            break
+        choices.remove(ans)
+        choices = [c for c in choices if score_giver(ans, c) == score]
+        loop_end = time.time()
+        print('Processed loop in: %s \n' % str(loop_end - loop_start))
+        # print(choices)
+        if not choices:
+            print("Bad scoring? nothing fits those scores you gave:")
+            print('\n'.join("%s -> %s" % (''.join(an), sc) for an, sc in zip(answers, scores)))
+            break
+    guess_count += len(answers)
+    print("=== Trial complete ==== \n")
+
+
+# Capturing end of program
+program_end = time.time()
+print('Program run-time in seconds is: %s' % str(program_end - program_start))
+print('Average number of guesses is: %s' % str(guess_count/trials_count))
+print('Average trial run-time in seconds is: %s' % str((program_end - program_start)/trials_count))
 
 """
 code = code_maker(size)
