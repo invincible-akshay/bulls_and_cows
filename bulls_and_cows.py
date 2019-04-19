@@ -8,7 +8,7 @@ from random import choice
 from random import shuffle
 
 # Valid digits
-digits = '0123456789'
+symbols = '0123456789'
 # Size of secret
 # size = 4
 size = int(input("What is the string size to play for? "))
@@ -66,21 +66,29 @@ def score_giver(secret, guessed_code):
     return bulls, cows
 
 
-def code_maker(code_size):
-    secret_code = ''.join(choice(digits) for i in range(code_size))
+def code_maker(code_size, symbols):
+    """Manufactures the secret of specified size using given symbols
+
+            Parameters:
+            code_size (int): Size of secret code
+            symbols (str): Valid symbols to make up the guess
+
+            Returns:
+            secret_code(str): Returning the secret code
+
+    """
+    secret_code = ''.join(choice(symbols) for i in range(code_size))
     return secret_code
 
 
-for t in range(trials_count):
-    print("Playing for secret of size = %d" % size)
-    chosen_secret = code_maker(size)
-    print("Chosen secret : %s" % chosen_secret)
-    choices = [p for p in product(digits, repeat=size)]
+def five_digs_or_less_breaker(pruned_symbols):
+    # for t in range(trials_count):
+    choices = [p for p in product(pruned_symbols, repeat=size)]
     shuffle(choices)
     answers = []
     scores = []
 
-    print("Playing Bulls & Cows with %i unique digits\n" % size)
+    print("Playing Bulls & Cows with %i digits\n" % size)
 
     while True:
         loop_start = time.time()
@@ -94,8 +102,8 @@ for t in range(trials_count):
         # score = parse_score(score)
         scores.append(score)
         # print("Bulls: %i, Cows: %i" % score)
-        found = score == (size, 0)
-        if found:
+        code_found = score == (size, 0)
+        if code_found:
             print("Ye-haw!")
             break
         choices.remove(ans)
@@ -107,22 +115,64 @@ for t in range(trials_count):
             print("Bad scoring? nothing fits those scores you gave:")
             print('\n'.join("%s -> %s" % (''.join(an), sc) for an, sc in zip(answers, scores)))
             break
-    guess_count += len(answers)
-    print("=== Trial complete ==== \n")
+    return ans, len(answers)
+
+
+print("Playing for secret of size = %d" % size)
+
+if size < 6:
+    for t in range(trials_count):
+        chosen_secret = code_maker(size, symbols)
+        print("Chosen secret : %s" % chosen_secret)
+        trial_start = time.time()
+        guess_details = five_digs_or_less_breaker(symbols)
+        guess_count += guess_details[1]
+        trial_end = time.time()
+        print("=== Trial complete in %s" % str(trial_end-trial_start))
+else:
+    found = None
+    for t in range(trials_count):
+        chosen_secret = code_maker(size, symbols)
+        print("Chosen secret : %s" % chosen_secret)
+        digits = [str(digit) for digit in range(10)]
+        trial_start = time.time()
+        initial_guesses = [[digit] * 10 for digit in range(10)]
+        # shuffle(initial_guesses)
+        hit_count = 0
+        for guess in initial_guesses:
+            score = score_giver(chosen_secret, guess)
+            print("Player scores the guess as: %s" % (score,))
+            found = score == (size, 0)
+            if found:
+                print("Ye-haw!")
+                break
+            if score == (0, 0):
+                digits.remove(str(guess[0]))
+                hit_count += 1
+
+            if hit_count > 5:
+                break
+
+        if not found:
+            guess_details = five_digs_or_less_breaker(''.join(digits))
+            guess_count += guess_details[1]
+
+        print("=== Trial complete ==== \n")
+        trial_end = time.time()
+        print("=== Trial complete in %s" % str(trial_end-trial_start))
 
 
 # Capturing end of program
 program_end = time.time()
 print('Program run-time in seconds is: %s' % str(program_end - program_start))
-print('Average number of guesses is: %s' % str(guess_count/trials_count))
-print('Average trial run-time in seconds is: %s' % str((program_end - program_start)/trials_count))
+print('Average number of guesses is: %s' % str(guess_count / trials_count))
+print('Average trial run-time in seconds is: %s' % str((program_end - program_start) / trials_count))
+print("***DISCLAIMER*** : For secrets of length more than 5, add 10 to displayed avg guess size above")
 
 """
 code = code_maker(size)
 print("Code chosen is - " + code)
-"""
 
-"""
 guess = '0000'
 print("Score for guess = %s is - %s" % (guess, (score_giver(code, guess),)))
 guess = '1111'
